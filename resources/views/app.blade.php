@@ -12,31 +12,7 @@
 <body>
     <div class="layout">
         {{-- ----------  Sidebar  ---------- --}}
-        <aside class="sidebar">
-            <nav>
-                <ul>
-                    <li>
-                        <a href="{{ url('/') }}"
-                           class="{{ request()->is('/') ? 'active' : '' }}">
-                            Home
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url('/videos') }}"
-                           class="{{ request()->is('videos') ? 'active' : '' }}">
-                            Videos
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url('/photos') }}"
-                           class="{{ request()->is('photos') ? 'active' : '' }}">
-                            Photos
-                        </a>
-                    </li>
-                    {{-- Add more items later (e.g., Account, Settings) --}}
-                </ul>
-            </nav>
-        </aside>
+        @include('components.sidebar')
 
         {{-- ----------  Main Content  ---------- --}}
         <main class="content">

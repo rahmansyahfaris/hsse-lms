@@ -1,9 +1,12 @@
 <?php
+// routes/web.php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\VideosController;
+use App\Http\Controllers\PhotosController;
 
-Route::view('/', 'home')->name('home');
-Route::view('/videos', 'videos')->name('videos');
-Route::view('/photos', 'photos')->name('photos');
 
-
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/videos', [VideosController::class, 'index'])->name('videos');
+Route::get('/photos', [PhotosController::class, 'index'])->name('photos');
