@@ -4,5 +4,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
 Route::view('/videos', 'videos')->name('videos');
+Route::view('/photos', 'photos')->name('photos');
 
 

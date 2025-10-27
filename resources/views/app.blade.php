@@ -27,6 +27,12 @@
                             Videos
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ url('/photos') }}"
+                           class="{{ request()->is('photos') ? 'active' : '' }}">
+                            Photos
+                        </a>
+                    </li>
                     {{-- Add more items later (e.g., Account, Settings) --}}
                 </ul>
             </nav>
