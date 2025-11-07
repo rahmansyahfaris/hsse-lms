@@ -13,4 +13,8 @@ return [
         'title' => 'Photos',
         'route'=> 'photos',        
     ],
+    [
+        'title' => 'Courses',
+        'route' => 'courses'
+    ]
 ];
