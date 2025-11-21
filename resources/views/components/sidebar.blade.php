@@ -1,4 +1,5 @@
 <aside class="sidebar">
+    <h1>LOGO</h1>
     <nav>
         @php $menu = config('menu'); @endphp
         <ul>
