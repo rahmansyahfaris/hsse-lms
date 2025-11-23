@@ -2,7 +2,7 @@
 // config/menu.php
 return [
     [
-        'title' => 'Home',
+        'title' => 'My Castle',
         'route'=> 'home',        
     ],
     [

@@ -6,7 +6,13 @@ use Illuminate\Support\Facades\Route;use App\Http\Controllers\CourseController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
+
+// Placeholders for Sidebar Items (The Band-Aid Fix) -> REMOVED
+// The Real Routes (Reclaiming the Castle)
+Route::get('/videos', function () { return view('videos'); })->name('videos');
+Route::get('/photos', function () { return view('photos'); })->name('photos');
+Route::get('/courses', function () { return view('courses'); })->name('courses');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
