@@ -18,7 +18,14 @@ Route::get('/videos', function () {
     ];
     return view('videos', ['videos' => $videos]);
 })->name('videos');
-Route::get('/photos', function () { return view('photos'); })->name('photos');
+Route::get('/photos', function () {
+    $photos = [
+        (object) ['title' => 'Site Inspection', 'url' => 'https://via.placeholder.com/600x400?text=Site+Inspection'],
+        (object) ['title' => 'Safety Gear', 'url' => 'https://via.placeholder.com/600x400?text=Safety+Gear'],
+        (object) ['title' => 'Team Meeting', 'url' => 'https://via.placeholder.com/600x400?text=Team+Meeting'],
+    ];
+    return view('photos', ['photos' => $photos]);
+})->name('photos');
 Route::get('/courses', [CourseController::class, 'index'])->name('courses');
 
 Route::get('/dashboard', function () {
