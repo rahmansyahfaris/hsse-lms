@@ -10,7 +10,14 @@ Route::get('/', function () {
 
 // Placeholders for Sidebar Items (The Band-Aid Fix) -> REMOVED
 // The Real Routes (Reclaiming the Castle)
-Route::get('/videos', function () { return view('videos'); })->name('videos');
+Route::get('/videos', function () {
+    $videos = [
+        (object) ['title' => 'Safety Video 1 – Introduction', 'url' => 'https://youtube.com/watch?v=123'],
+        (object) ['title' => 'Safety Video 2 – Equipment Checklist', 'url' => 'https://youtube.com/watch?v=456'],
+        (object) ['title' => 'Safety Video 3 – Emergency Procedures', 'url' => 'https://youtube.com/watch?v=789'],
+    ];
+    return view('videos', ['videos' => $videos]);
+})->name('videos');
 Route::get('/photos', function () { return view('photos'); })->name('photos');
 Route::get('/courses', [CourseController::class, 'index'])->name('courses');
 
