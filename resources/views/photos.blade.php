@@ -13,8 +13,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach ($photos as $photo)
                             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200 border border-gray-100 dark:border-gray-700 group">
-                                <div class="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700 w-full h-48 overflow-hidden">
-                                    <img src="{{ $photo->url }}" alt="{{ $photo->title }}" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300">
+                                <div class="h-56 bg-gray-200 dark:bg-gray-700 w-full overflow-hidden">
+                                    <img src="{{ $photo->url }}" alt="{{ $photo->title }}" class="object-cover w-100 h-full group-hover:scale-105 transition-transform duration-300">
                                 </div>
                                 <div class="p-4">
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $photo->title }}</h3>

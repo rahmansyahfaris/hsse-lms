@@ -20,7 +20,7 @@ Route::get('/videos', function () {
 })->name('videos');
 Route::get('/photos', function () {
     $photos = [
-        (object) ['title' => 'Site Inspection', 'url' => 'https://placehold.co/600x400?text=Site+Inspection'],
+        (object) ['title' => 'Site Inspection', 'url' => 'https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg'],
         (object) ['title' => 'Safety Gear', 'url' => 'https://placehold.co/600x400?text=Safety+Gear'],
         (object) ['title' => 'Team Meeting', 'url' => 'https://placehold.co/600x400?text=Team+Meeting'],
     ];
