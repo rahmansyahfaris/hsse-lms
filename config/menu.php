@@ -2,8 +2,8 @@
 // config/menu.php
 return [
     [
-        'title' => 'My Castle',
-        'route'=> 'home',        
+        'title' => 'Home',
+        'route'=> 'dashboard',        
     ],
     [
         'title' => 'Videos',
