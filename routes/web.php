@@ -50,6 +50,11 @@ Route::middleware(['auth', CheckRole::class.':admin'])->group(function () {
 });
 */
 
+// Test Route for RBAC
+Route::get('/secret', function () {
+    return 'Only Admins can see this!';
+})->middleware(['auth', 'role:admin']);
+
 require __DIR__.'/auth.php';
 
 
