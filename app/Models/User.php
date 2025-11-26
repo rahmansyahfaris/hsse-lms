@@ -46,4 +46,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function healthRecord()
+    {
+        return $this->hasOne(HealthRecord::class);
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_enrollments')
+                    ->withPivot('status', 'enrolled_at')
+                    ->withTimestamps();
+    }
 }
