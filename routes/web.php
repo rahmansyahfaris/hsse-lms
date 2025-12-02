@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:instructor,admin'])->group(function () {
     Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
     Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
+    Route::get('/courses/{course}/sections', [\App\Http\Controllers\CourseSectionController::class, 'index'])->name('courses.sections.index');
 });
 
 /*

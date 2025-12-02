@@ -22,6 +22,16 @@
                                     </svg>
                                     <span>{{ $course->duration_hours }} hours</span>
                                 </div>
+                                
+                                @auth
+                                    @if(auth()->user()->role === 'instructor' || auth()->user()->role === 'admin')
+                                        <div class="mt-4">
+                                            <a href="{{ route('courses.sections.index', $course) }}" style="display: inline-block; padding: 10px 20px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                                                Manage Sections
+                                            </a>
+                                        </div>
+                                    @endif
+                                @endauth
                             </div>
                         @endforeach
                     </div>
