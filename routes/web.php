@@ -5,6 +5,7 @@ use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseSectionController;
+use App\Http\Controllers\SecretController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -56,9 +57,7 @@ Route::middleware(['auth', CheckRole::class.':admin'])->group(function () {
 */
 
 // Test Route for RBAC
-Route::get('/secret', function () {
-    return 'Only Admins can see this!';
-})->middleware(['auth', 'role:admin']);
+Route::middleware(['auth', 'role:instructor,admin'])->get('/secret', [SecretController::class, 'index'])->name('secret');
 
 require __DIR__.'/auth.php';
 
