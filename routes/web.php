@@ -30,6 +30,7 @@ Route::get('/photos', function () {
     return view('photos', ['photos' => $photos]);
 })->name('photos');
 Route::get('/courses', [CourseController::class, 'index'])->name('courses');
+Route::get('/courses/{course}/learn', [CourseController::class, 'learn'])->middleware('auth')->name('courses.learn');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

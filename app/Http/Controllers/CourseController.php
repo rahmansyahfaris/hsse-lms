@@ -29,6 +29,20 @@ class CourseController extends Controller
 
         return redirect()->route('courses')->with('success', 'Course created successfully!');
     }
+
+    public function learn(Course $course, \Illuminate\Http\Request $request)
+    {
+        // Load all sections for this course
+        $sections = $course->sections()->orderBy('order')->get();
+
+        // Get the section ID from query parameter, or default to the first section
+        $sectionId = $request->query('section');
+        $currentSection = $sectionId 
+            ? $sections->firstWhere('id', $sectionId)
+            : $sections->first();
+
+        return view('courses.learn', compact('course', 'sections', 'currentSection'));
+    }
 }
 
 
