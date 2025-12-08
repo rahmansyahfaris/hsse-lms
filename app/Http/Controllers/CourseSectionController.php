@@ -33,16 +33,22 @@ class CourseSectionController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|in:video,reading,quiz,document',
+            'content_file' => 'required|file|max:102400', // Max 100MB
         ]);
 
-        // Create the section
-        // Note: 'content' is required by DB, so we use a placeholder for now.
-        // We will implement file upload in the next phase.
+        $contentPath = 'No Content';
+
+        if ($request->hasFile('content_file')) {
+            // Store in 'storage/app/public/course_content'
+            // Returns the path relative to 'public/' e.g. 'course_content/xyz.jpg'
+            $contentPath = $request->file('content_file')->store('course_content', 'public');
+        }
+
         $course->sections()->create([
             'title' => $validated['title'],
             'type' => $validated['type'],
-            'content' => 'Pending Content', // Placeholder
-            'order' => $course->sections()->count() + 1, // Auto-increment order
+            'content' => $contentPath,
+            'order' => $course->sections()->count() + 1,
         ]);
 
         return redirect()->route('courses.sections.index', $course)
