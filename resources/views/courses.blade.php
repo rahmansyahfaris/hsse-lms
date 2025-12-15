@@ -27,22 +27,22 @@
                                     <div class="mt-4 flex flex-col space-y-2">
                                         {{-- Instructor: Manage Button --}}
                                         @if(auth()->user()->role === 'instructor' || auth()->user()->role === 'admin')
-                                            <a href="{{ route('courses.sections.index', $course) }}" class="block w-full text-center px-4 py-2 bg-indigo-600 text-white rounded-md font-semibold text-sm hover:bg-indigo-700">
+                                            <a href="{{ route('courses.sections.index', $course) }}" style="display: block; width: 100%; text-align: center; padding: 8px 16px; background-color: #4F46E5; color: white; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none;">
                                                 Manage Sections
                                             </a>
                                         @endif
 
                                         {{-- Student: Enroll / Continue Button --}}
-                                        @if(auth()->user()->courses->contains($course))
+                                        @if(auth()->user()->courses->contains('id', $course->id))
                                             {{-- Already Enrolled --}}
-                                            <a href="{{ route('courses.learn', $course) }}" class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-md font-semibold text-sm hover:bg-green-700">
+                                            <a href="{{ route('courses.learn', $course) }}" style="display: block; width: 100%; text-align: center; padding: 8px 16px; background-color: #16A34A; color: white; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none;">
                                                 Continue Learning
                                             </a>
                                         @else
                                             {{-- Not Enrolled --}}
                                             <form action="{{ route('courses.enroll', $course) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md font-semibold text-sm hover:bg-blue-700">
+                                                <button type="submit" style="display: block; width: 100%; text-align: center; padding: 8px 16px; background-color: #2563EB; color: white; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; cursor: pointer;">
                                                     Enroll Now
                                                 </button>
                                             </form>
