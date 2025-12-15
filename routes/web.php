@@ -5,6 +5,7 @@ use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseSectionController;
+use App\Http\Controllers\CourseEnrollmentController;
 use App\Http\Controllers\SecretController;
 
 Route::get('/', function () {
@@ -31,6 +32,7 @@ Route::get('/photos', function () {
 })->name('photos');
 Route::get('/courses', [CourseController::class, 'index'])->name('courses');
 Route::get('/courses/{course}/learn', [CourseController::class, 'learn'])->middleware('auth')->name('courses.learn');
+Route::post('/courses/{course}/enroll', [CourseEnrollmentController::class, 'store'])->middleware('auth')->name('courses.enroll');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
