@@ -34,11 +34,20 @@
                         <div class="mb-4">
                             <label for="content_file" class="block text-sm font-medium text-gray-700">Replace Content File (Optional)</label>
                             @if($section->content)
-                                <div style="background-color: #ecfdf5; border: 1px solid #10b981; color: #064e3b; padding: 12px; border-radius: 6px; margin-bottom: 12px; display: flex; align-items: center;">
-                                    <span style="font-size: 1.25rem; margin-right: 8px;">✅</span>
-                                    <div>
-                                        <div style="font-weight: bold; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Current File Attached</div>
-                                        <div style="font-family: monospace; font-size: 1rem;">{{ basename($section->content) }}</div>
+                                <div style="background-color: #ecfdf5; border: 1px solid #10b981; color: #064e3b; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="font-size: 1.25rem; margin-right: 8px;">✅</span>
+                                            <div>
+                                                <div style="font-weight: bold; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Current File Attached</div>
+                                                <div style="font-family: monospace; font-size: 1rem; margin-top: 4px;">
+                                                    {{ $section->original_filename ?? basename($section->content) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="{{ asset('storage/' . $section->content) }}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #10b981; color: white; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.875rem;">
+                                            Preview File
+                                        </a>
                                     </div>
                                 </div>
                             @endif

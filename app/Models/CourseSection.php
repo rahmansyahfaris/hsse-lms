@@ -12,6 +12,7 @@ class CourseSection extends Model
         'title',
         'type',
         'content',
+        'original_filename',
         'order',
     ];
 

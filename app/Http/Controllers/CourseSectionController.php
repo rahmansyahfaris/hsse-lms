@@ -39,17 +39,20 @@ class CourseSectionController extends Controller
         ]);
 
         $contentPath = 'No Content';
+        $originalFilename = null;
 
         if ($request->hasFile('content_file')) {
             // Store in 'storage/app/public/course_content'
             // Returns the path relative to 'public/' e.g. 'course_content/xyz.jpg'
             $contentPath = $request->file('content_file')->store('course_content', 'public');
+            $originalFilename = $request->file('content_file')->getClientOriginalName();
         }
 
         $course->sections()->create([
             'title' => $validated['title'],
             'type' => $validated['type'],
             'content' => $contentPath,
+            'original_filename' => $originalFilename,
             'order' => $course->sections()->count() + 1,
         ]);
 
@@ -89,6 +92,7 @@ class CourseSectionController extends Controller
 
             // Upload new file
             $section->content = $request->file('content_file')->store('course_content', 'public');
+            $section->original_filename = $request->file('content_file')->getClientOriginalName();
         }
 
         $section->save();
