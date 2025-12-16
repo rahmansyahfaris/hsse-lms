@@ -61,20 +61,38 @@
                                     {!! nl2br(e($currentSection->content)) !!}
                                 </div>
                             @elseif ($currentSection->type === 'document')
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
-                                    </svg>
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">Document</h3>
-                                    <p class="mt-1 text-sm text-gray-500">{{ $currentSection->title }}</p>
-                                    <div class="mt-6">
-                                        <a href="{{ asset('storage/' . $currentSection->content) }}" 
-                                           download 
-                                           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            Download Document
-                                        </a>
+                                @php
+                                    $fileExtension = strtolower(pathinfo($currentSection->content, PATHINFO_EXTENSION));
+                                    $isPdf = $fileExtension === 'pdf';
+                                @endphp
+
+                                @if ($isPdf)
+                                    {{-- PDF Viewer --}}
+                                    <div class="bg-gray-100 rounded-lg overflow-hidden" style="height: 600px;">
+                                        <iframe 
+                                            src="{{ asset('storage/' . $currentSection->content) }}" 
+                                            style="width: 100%; height: 100%; border: 0;"
+                                            title="{{ $currentSection->title }}">
+                                        </iframe>
                                     </div>
-                                </div>
+                                @else
+                                    {{-- Non-PDF Fallback --}}
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                        <svg class="mx-auto h-11 w-11 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                                        </svg>
+                                        <h3 class="mt-2 text-sm font-medium text-gray-900">Document Cannot Be Viewed</h3>
+                                        <p class="mt-1 text-sm text-gray-500">{{ $currentSection->original_filename ?? basename($currentSection->content) }}</p>
+                                        <p class="mt-2 text-xs text-gray-400">This file type cannot be viewed in the browser.</p>
+                                        <div class="mt-6">
+                                            <a href="{{ asset('storage/' . $currentSection->content) }}" 
+                                               download 
+                                               style="display: inline-flex; align-items: center; padding: 10px 20px; background-color: #4F46E5; color: white; border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 14px;">
+                                                Download Document
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endif
                             @else
                                 <div class="bg-gray-100 rounded-lg p-8 text-center">
                                     <p class="text-gray-600">Content type: {{ $currentSection->type }}</p>
