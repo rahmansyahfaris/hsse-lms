@@ -10,6 +10,15 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     {{ __("You're logged in!") }}
+
+                    @if(auth()->user()->role === 'instructor' || auth()->user()->role === 'admin')
+                        <div class="mt-6 border-t pt-4">
+                            <h3 class="text-lg font-medium mb-4">Instructor Controls</h3>
+                            <a href="{{ route('courses.create') }}" style="display: inline-block; padding: 10px 20px; background-color: #4F46E5; color: white; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                                + Create New Course
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

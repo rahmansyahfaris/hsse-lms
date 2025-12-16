@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\CourseSection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CourseSectionController extends Controller
 {
@@ -53,5 +55,61 @@ class CourseSectionController extends Controller
 
         return redirect()->route('courses.sections.index', $course)
             ->with('success', 'Section created successfully!');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Course $course, CourseSection $section)
+    {
+        return view('courses.sections.edit', compact('course', 'section'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Course $course, CourseSection $section)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:video,reading,quiz,document',
+            'content_file' => 'nullable|file|max:102400', // Optional on update
+        ]);
+
+        // Updates
+        $section->title = $validated['title'];
+        $section->type = $validated['type'];
+
+        // Handle File Update
+        if ($request->hasFile('content_file')) {
+            // Delete old file if it exists
+            if ($section->content && Storage::disk('public')->exists($section->content)) {
+                Storage::disk('public')->delete($section->content);
+            }
+
+            // Upload new file
+            $section->content = $request->file('content_file')->store('course_content', 'public');
+        }
+
+        $section->save();
+
+        return redirect()->route('courses.sections.index', $course)
+            ->with('success', 'Section updated successfully!');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Course $course, CourseSection $section)
+    {
+        // Delete file from storage
+        if ($section->content && Storage::disk('public')->exists($section->content)) {
+            Storage::disk('public')->delete($section->content);
+        }
+
+        $section->delete();
+
+        return redirect()->route('courses.sections.index', $course)
+            ->with('success', 'Section deleted successfully!');
     }
 }
