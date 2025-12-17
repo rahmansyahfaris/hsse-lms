@@ -14,31 +14,57 @@
                         <h3 class="font-semibold text-lg mb-4">Course Content</h3>
                         <ul class="space-y-2">
                             @foreach ($sections as $section)
+                                @php
+                                    $isLocked = $section->is_locked && 
+                                                // It's locked if it's marked locked AND previous not completed
+                                                ($loop->index > 0 && 
+                                                 (!isset($progress[$sections[$loop->index - 1]->id]) || 
+                                                  !$progress[$sections[$loop->index - 1]->id]->completed));
+                                    
+                                    $isCompleted = isset($progress[$section->id]) && $progress[$section->id]->completed;
+                                    $isActive = $currentSection && $currentSection->id === $section->id;
+                                @endphp
                                 <li>
-                                    <a href="{{ route('courses.learn', ['course' => $course->id, 'section' => $section->id]) }}" 
-                                       class="block p-3 rounded {{ $currentSection && $currentSection->id === $section->id ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-gray-100' }}">
-                                        <div class="flex items-center">
-                                            @if ($section->type === 'video')
-                                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                                                </svg>
-                                            @elseif ($section->type === 'reading')
-                                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                                                </svg>
-                                            @elseif ($section->type === 'document')
-                                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
-                                                </svg>
-                                            @else
-                                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                                </svg>
-                                            @endif
-                                            <span class="text-sm">{{ $section->title }}</span>
+                                    @if($isLocked)
+                                        <div class="block p-3 rounded bg-gray-100 text-gray-400 cursor-not-allowed">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    <span class="mr-2">🔒</span>
+                                                    <span class="text-sm">{{ $section->title }}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </a>
+                                    @else
+                                        <a href="{{ route('courses.learn', ['course' => $course->id, 'section' => $section->id]) }}" 
+                                           class="block p-3 rounded {{ $isActive ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-gray-100' }}">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    @if ($section->type === 'video')
+                                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                                                        </svg>
+                                                    @elseif ($section->type === 'reading')
+                                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                                                        </svg>
+                                                    @elseif ($section->type === 'document')
+                                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    @else
+                                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    @endif
+                                                    <span class="text-sm truncate" style="max-width: 15rem;">{{ $section->title }}</span>
+                                                </div>
+                                                @if($isCompleted)
+                                                    <span class="text-green-500 ml-2">✅</span>
+                                                @endif
+                                            </div>
+                                        </a>
+                                    @endif
                                 </li>
                             @endforeach
                         </ul>
@@ -108,4 +134,77 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sectionId = "{{ $currentSection->id ?? '' }}";
+            const sectionType = "{{ $currentSection->type ?? '' }}";
+            
+            if (!sectionId) return;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            // Function to mark complete
+            function markComplete() {
+                fetch(`/sections/${sectionId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Section complete');
+                    // Optional: Reload to update sidebar checks or show a "Next" button
+                    // window.location.reload(); 
+                    // For better UX, we could just show a toast notification
+                });
+            }
+
+            // --- DOCUMENT AUTO-COMPLETE ---
+            if (sectionType === 'document') {
+                // Documents are auto-completed on view
+                markComplete();
+            }
+
+            // --- VIDEO TRACKING ---
+            const videoElement = document.querySelector('video');
+            if (sectionType === 'video' && videoElement) {
+                let lastUpdateTime = 0;
+                
+                videoElement.addEventListener('timeupdate', function() {
+                    const currentTime = Math.floor(videoElement.currentTime);
+                    const totalDuration = Math.floor(videoElement.duration);
+                    
+                    // Update every 5 seconds
+                    if (currentTime > lastUpdateTime + 5) {
+                        lastUpdateTime = currentTime;
+                        
+                        fetch(`/sections/${sectionId}/progress`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({
+                                watch_time: currentTime,
+                                total_duration: totalDuration
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.completed) {
+                                console.log('Video completed!');
+                            }
+                        });
+                    }
+                });
+
+                // Also mark complete on end
+                videoElement.addEventListener('ended', function() {
+                    markComplete();
+                });
+            }
+        });
+    </script>
 </x-app-layout>

@@ -61,6 +61,14 @@
                             <p class="mt-1 text-xs text-gray-500">Upload new file to replace current content. Max size: 100MB.</p>
                         </div>
 
+                        <!-- Lock Section -->
+                        <div class="mb-4">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $section->is_locked) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <span class="ml-2 text-gray-700">Lock this section (Requires previous section completion)</span>
+                            </label>
+                        </div>
+
                         <div class="flex items-center justify-end mt-4">
                             <a href="{{ route('courses.sections.index', $course) }}" class="text-gray-600 hover:text-gray-900 mr-4">Cancel</a>
                             

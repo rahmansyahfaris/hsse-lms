@@ -36,6 +36,7 @@ class CourseSectionController extends Controller
             'title' => 'required|string|max:255',
             'type' => 'required|in:video,reading,quiz,document',
             'content_file' => 'required|file|max:102400', // Max 100MB
+            'is_locked' => 'nullable|boolean',
         ]);
 
         $contentPath = 'No Content';
@@ -54,6 +55,7 @@ class CourseSectionController extends Controller
             'content' => $contentPath,
             'original_filename' => $originalFilename,
             'order' => $course->sections()->count() + 1,
+            'is_locked' => $request->has('is_locked'),
         ]);
 
         return redirect()->route('courses.sections.index', $course)
@@ -77,11 +79,13 @@ class CourseSectionController extends Controller
             'title' => 'required|string|max:255',
             'type' => 'required|in:video,reading,quiz,document',
             'content_file' => 'nullable|file|max:102400', // Optional on update
+            'is_locked' => 'nullable|boolean',
         ]);
 
         // Updates
         $section->title = $validated['title'];
         $section->type = $validated['type'];
+        $section->is_locked = $request->has('is_locked');
 
         // Handle File Update
         if ($request->hasFile('content_file')) {

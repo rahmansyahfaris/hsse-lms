@@ -65,6 +65,13 @@ Route::middleware(['auth', CheckRole::class.':admin'])->group(function () {
 // Test Route for RBAC
 Route::middleware(['auth', 'role:instructor,admin'])->get('/secret', [SecretController::class, 'index'])->name('secret');
 
+// Progress Tracking Routes (Phase 7A)
+use App\Http\Controllers\SectionProgressController;
+Route::post('/sections/{section}/complete', [SectionProgressController::class, 'markComplete'])
+    ->name('sections.complete')->middleware('auth');
+Route::post('/sections/{section}/progress', [SectionProgressController::class, 'updateVideoProgress'])
+    ->name('sections.progress')->middleware('auth');
+
 require __DIR__.'/auth.php';
 
 

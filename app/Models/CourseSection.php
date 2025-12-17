@@ -14,10 +14,16 @@ class CourseSection extends Model
         'content',
         'original_filename',
         'order',
+        'is_locked',
     ];
 
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function progress()
+    {
+        return $this->hasMany(SectionProgress::class);
     }
 }
