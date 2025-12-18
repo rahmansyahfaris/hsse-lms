@@ -37,6 +37,7 @@ class CourseSectionController extends Controller
             'type' => 'required|in:video,reading,quiz,document',
             'content_file' => 'required|file|max:102400', // Max 100MB
             'is_locked' => 'nullable|boolean',
+            'is_skippable' => 'nullable|boolean',
         ]);
 
         $contentPath = 'No Content';
@@ -56,6 +57,7 @@ class CourseSectionController extends Controller
             'original_filename' => $originalFilename,
             'order' => $course->sections()->count() + 1,
             'is_locked' => $request->has('is_locked'),
+            'is_skippable' => $request->has('is_skippable'),
         ]);
 
         return redirect()->route('courses.sections.index', $course)
@@ -80,12 +82,14 @@ class CourseSectionController extends Controller
             'type' => 'required|in:video,reading,quiz,document',
             'content_file' => 'nullable|file|max:102400', // Optional on update
             'is_locked' => 'nullable|boolean',
+            'is_skippable' => 'nullable|boolean',
         ]);
 
         // Updates
         $section->title = $validated['title'];
         $section->type = $validated['type'];
         $section->is_locked = $request->has('is_locked');
+        $section->is_skippable = $request->has('is_skippable');
 
         // Handle File Update
         if ($request->hasFile('content_file')) {
@@ -119,5 +123,39 @@ class CourseSectionController extends Controller
 
         return redirect()->route('courses.sections.index', $course)
             ->with('success', 'Section deleted successfully!');
+    }
+    /**
+     * Reorder sections.
+     */
+    public function reorder(Request $request, Course $course, CourseSection $section)
+    {
+        $direction = $request->input('direction');
+        $currentOrder = $section->order;
+
+        if ($direction === 'up') {
+            $previousSection = $course->sections()
+                ->where('order', '<', $currentOrder)
+                ->orderBy('order', 'desc')
+                ->first();
+
+            if ($previousSection) {
+                // Swap orders
+                $section->update(['order' => $previousSection->order]);
+                $previousSection->update(['order' => $currentOrder]);
+            }
+        } elseif ($direction === 'down') {
+            $nextSection = $course->sections()
+                ->where('order', '>', $currentOrder)
+                ->orderBy('order', 'asc')
+                ->first();
+
+            if ($nextSection) {
+                // Swap orders
+                $section->update(['order' => $nextSection->order]);
+                $nextSection->update(['order' => $currentOrder]);
+            }
+        }
+
+        return back()->with('success', 'Section order updated.');
     }
 }

@@ -15,6 +15,7 @@ class CourseSection extends Model
         'original_filename',
         'order',
         'is_locked',
+        'is_skippable',
     ];
 
     public function course(): BelongsTo

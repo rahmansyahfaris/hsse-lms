@@ -39,14 +39,21 @@ class SectionProgressController extends Controller
         $watchTime = $request->input('watch_time');
         $totalDuration = $request->input('total_duration');
 
-        // Logic: specific completion threshold for videos (e.g., 90%)
-        // If we want to strictly enforce it here, we checks watchTime / totalDuration
-        $completed = false;
+        // Video Logic
+        $percentage = 0;
         if ($totalDuration > 0) {
             $percentage = ($watchTime / $totalDuration) * 100;
-            if ($percentage >= 90) {
-                $completed = true;
-            }
+        }
+
+        // Completion Rules:
+        // 1. If Section is SKIPPABLE -> Complete immediately (as long as they started watching)
+        // 2. If UN-SKIPPABLE -> Must watch 90%
+        $completed = false;
+        
+        if ($section->is_skippable) {
+            $completed = true; 
+        } elseif ($percentage >= 90) {
+            $completed = true;
         }
 
         $data = [

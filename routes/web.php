@@ -54,6 +54,8 @@ Route::middleware(['auth', 'role:instructor,admin'])->group(function () {
     Route::get('/courses/{course}/sections/{section}/edit', [CourseSectionController::class, 'edit'])->name('courses.sections.edit');
     Route::put('/courses/{course}/sections/{section}', [CourseSectionController::class, 'update'])->name('courses.sections.update');
     Route::delete('/courses/{course}/sections/{section}', [CourseSectionController::class, 'destroy'])->name('courses.sections.destroy');
+    Route::patch('courses/{course}/sections/{section}/reorder', [CourseSectionController::class, 'reorder'])
+        ->name('courses.sections.reorder');
 });
 
 /*

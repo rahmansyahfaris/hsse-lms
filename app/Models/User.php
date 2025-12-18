@@ -58,4 +58,12 @@ class User extends Authenticatable
                     ->withPivot('status', 'enrolled_at')
                     ->withTimestamps();
     }
+
+    /**
+     * Check if user has a specific role.
+     */
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
 }

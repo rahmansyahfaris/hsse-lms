@@ -11,6 +11,15 @@
                 <div class="flex">
                     <!-- Sidebar: Section Navigation -->
                     <div class="w-1/4 bg-gray-50 p-6 border-r border-gray-200">
+                        <!-- Back Link -->
+                        <div class="mb-4">
+                            <a href="{{ route('courses') }}" class="text-indigo-600 hover:text-indigo-900 text-sm flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Back to Course List
+                            </a>
+                        </div>
                         <h3 class="font-semibold text-lg mb-4">Course Content</h3>
                         <ul class="space-y-2">
                             @foreach ($sections as $section)
@@ -125,8 +134,39 @@
                                 </div>
                             @endif
                         @else
-                            <div class="text-center py-12">
-                                <p class="text-gray-500">No sections available yet.</p>
+                        @endif
+                        
+                        <!-- Next/Prev Buttons -->
+                        @if ($currentSection)
+                            @php
+                                $currentIndex = $sections->search(function($item) use ($currentSection) {
+                                    return $item->id === $currentSection->id;
+                                });
+                                $prevSection = $currentIndex > 0 ? $sections[$currentIndex - 1] : null;
+                                $nextSection = $currentIndex < $sections->count() - 1 ? $sections[$currentIndex + 1] : null;
+                                
+                                // Check completion for Next button state
+                                $isCompleted = isset($progress[$currentSection->id]) && $progress[$currentSection->id]->completed;
+                                $canProceed = $currentSection->is_skippable || $isCompleted;
+                            @endphp
+                            
+                            <div class="flex justify-between mt-8 pt-4 border-t border-gray-200">
+                                @if($prevSection)
+                                    <a href="{{ route('courses.learn', ['course' => $course->id, 'section' => $prevSection->id]) }}" 
+                                       style="display: inline-flex; align-items: center; padding: 8px 16px; background-color: #E5E7EB; color: #374151; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                                        ← Previous
+                                    </a>
+                                @else
+                                    <div></div>
+                                @endif
+
+                                @if($nextSection)
+                                    <a id="next-section-btn" 
+                                       href="{{ route('courses.learn', ['course' => $course->id, 'section' => $nextSection->id]) }}" 
+                                       style="display: inline-flex; align-items: center; padding: 8px 16px; background-color: #4F46E5; color: white; border-radius: 6px; font-weight: 600; text-decoration: none; {{ !$canProceed ? 'opacity: 0.5; pointer-events: none;' : '' }}">
+                                        Next Section →
+                                    </a>
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -155,9 +195,36 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log('Section complete');
-                    // Optional: Reload to update sidebar checks or show a "Next" button
-                    // window.location.reload(); 
-                    // For better UX, we could just show a toast notification
+                    
+                    // --- REAL-TIME UI UPDATE ---
+                    // 1. Find the sidebar list item for the current section
+                    // We need a way to identify it. Let's assume we add ID to the <li> loop.
+                    // Ideally, we reload the sidebar fragment, but purely JS way:
+                    
+                    // Simple Reload (Easiest for v1)
+                     if (data.message === 'Section marked as complete.' || data.completed) {
+                         // 1. Enable Next Button
+                         const nextBtn = document.getElementById('next-section-btn');
+                         if(nextBtn) {
+                             nextBtn.style.opacity = '1';
+                             nextBtn.style.pointerEvents = 'auto';
+                         }
+
+                         // 2. Real-time Sidebar Update
+                         const sidebarLink = document.querySelector(`a[href*="/sections/${sectionId}"]`);
+                         if (sidebarLink) {
+                             // Add Checkmark if not exists
+                             if (!sidebarLink.innerHTML.includes('✅')) {
+                                 const checkNode = document.createElement('span');
+                                 checkNode.className = 'text-green-500 ml-2';
+                                 checkNode.innerText = '✅';
+                                 sidebarLink.querySelector('.flex.items-center.justify-between').appendChild(checkNode);
+                             }
+                             
+                             // Optional: Reload if needed logic is complex
+                             // window.location.reload(); 
+                         }
+                    }
                 });
             }
 
