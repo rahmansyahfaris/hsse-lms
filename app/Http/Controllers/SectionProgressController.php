@@ -45,35 +45,39 @@ class SectionProgressController extends Controller
             $percentage = ($watchTime / $totalDuration) * 100;
         }
 
-        // Completion Rules:
-        // 1. If Section is SKIPPABLE -> Complete immediately (as long as they started watching)
-        // 2. If UN-SKIPPABLE -> Must watch 90%
-        $completed = false;
+        // Completion Rules (Explicit Mode):
+        // We do NOT mark 'completed' here anymore.
+        // We just tell the frontend if the criteria is met.
+        
+        $criteriaMet = false;
         
         if ($section->is_skippable) {
-            $completed = true; 
+            $criteriaMet = true; 
         } elseif ($percentage >= 90) {
-            $completed = true;
+            $criteriaMet = true;
         }
 
         $data = [
             'watch_time' => $watchTime,
             'total_duration' => $totalDuration,
         ];
-
-        // Only mark complete if threshold reached or if it was already complete
-        if ($completed) {
-            $data['completed'] = true;
-        }
-
+        
+        // If it was ALREADY complete, keep it complete. 
+        // But we don't set it to true if it's currently false.
+        
         SectionProgress::updateOrCreate(
             ['user_id' => $user->id, 'course_section_id' => $section->id],
             $data
         );
 
+        $progress = SectionProgress::where('user_id', $user->id)
+                                   ->where('course_section_id', $section->id)
+                                   ->first();
+
         return response()->json([
             'message' => 'Progress updated.',
-            'completed' => $completed
+            'criteria_met' => $criteriaMet,
+            'completed' => $progress ? $progress->completed : false
         ]);
     }
 }

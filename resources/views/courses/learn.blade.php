@@ -147,7 +147,22 @@
                                 
                                 // Check completion for Next button state
                                 $isCompleted = isset($progress[$currentSection->id]) && $progress[$currentSection->id]->completed;
-                                $canProceed = $currentSection->is_skippable || $isCompleted;
+                                
+                                // NEW: Check if criteria is met (for button persistence)
+                                $criteriaMet = false;
+                                if ($currentSection->is_skippable) {
+                                    $criteriaMet = true;
+                                } elseif (isset($progress[$currentSection->id])) {
+                                    $sectionProgress = $progress[$currentSection->id];
+                                    if ($sectionProgress->total_duration > 0) {
+                                        $percentage = ($sectionProgress->watch_time / $sectionProgress->total_duration) * 100;
+                                        if ($percentage >= 90) {
+                                            $criteriaMet = true;
+                                        }
+                                    }
+                                }
+                                
+                                $canProceed = $criteriaMet || $isCompleted;
                             @endphp
                             
                             <div class="flex justify-between mt-8 pt-4 border-t border-gray-200">
@@ -166,6 +181,12 @@
                                        style="display: inline-flex; align-items: center; padding: 8px 16px; background-color: #4F46E5; color: white; border-radius: 6px; font-weight: 600; text-decoration: none; {{ !$canProceed ? 'opacity: 0.5; pointer-events: none;' : '' }}">
                                         Next Section →
                                     </a>
+                                @else
+                                    {{-- Last Section: Show Finish Button --}}
+                                    <button id="finish-btn"
+                                       style="display: inline-flex; align-items: center; padding: 8px 16px; background-color: #10B981; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; {{ !$canProceed ? 'opacity: 0.5; pointer-events: none;' : '' }}">
+                                        Finish Course 🎉
+                                    </button>
                                 @endif
                             </div>
                         @endif
@@ -182,9 +203,27 @@
             if (!sectionId) return;
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const nextBtn = document.getElementById('next-section-btn');
+            const finishBtn = document.getElementById('finish-btn');
+            
+            // --- UI HELPERS ---
+            function enableProceedButton() {
+                if(nextBtn) {
+                    nextBtn.style.opacity = '1';
+                    nextBtn.style.pointerEvents = 'auto';
+                }
+                if(finishBtn) {
+                    finishBtn.style.opacity = '1';
+                    finishBtn.style.pointerEvents = 'auto';
+                }
+            }
 
-            // Function to mark complete
-            function markComplete() {
+            // --- CLICK HANDLER (EXPLICIT COMPLETION) ---
+            function handleProceed(e) {
+                e.preventDefault();
+                const targetUrl = this.getAttribute('href'); // For Next button
+                
+                // Call Mark Complete
                 fetch(`/sections/${sectionId}/complete`, {
                     method: 'POST',
                     headers: {
@@ -194,48 +233,28 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Section complete');
-                    
-                    // --- REAL-TIME UI UPDATE ---
-                    // 1. Find the sidebar list item for the current section
-                    // We need a way to identify it. Let's assume we add ID to the <li> loop.
-                    // Ideally, we reload the sidebar fragment, but purely JS way:
-                    
-                    // Simple Reload (Easiest for v1)
-                     if (data.message === 'Section marked as complete.' || data.completed) {
-                         // 1. Enable Next Button
-                         const nextBtn = document.getElementById('next-section-btn');
-                         if(nextBtn) {
-                             nextBtn.style.opacity = '1';
-                             nextBtn.style.pointerEvents = 'auto';
-                         }
-
-                         // 2. Real-time Sidebar Update
-                         const sidebarLink = document.querySelector(`a[href*="/sections/${sectionId}"]`);
-                         if (sidebarLink) {
-                             // Add Checkmark if not exists
-                             if (!sidebarLink.innerHTML.includes('✅')) {
-                                 const checkNode = document.createElement('span');
-                                 checkNode.className = 'text-green-500 ml-2';
-                                 checkNode.innerText = '✅';
-                                 sidebarLink.querySelector('.flex.items-center.justify-between').appendChild(checkNode);
-                             }
-                             
-                             // Optional: Reload if needed logic is complex
-                             // window.location.reload(); 
-                         }
+                    console.log('Section marked complete explicitly.');
+                    if(targetUrl) {
+                        window.location.href = targetUrl;
+                    } else {
+                        // If Finish Button, reload or go to course index
+                        window.location.href = "{{ route('courses') }}";
                     }
                 });
             }
 
-            // --- DOCUMENT AUTO-COMPLETE ---
-            if (sectionType === 'document') {
-                // Documents are auto-completed on view
-                markComplete();
+            if(nextBtn) nextBtn.addEventListener('click', handleProceed);
+            if(finishBtn) finishBtn.addEventListener('click', handleProceed);
+
+            // --- DOCUMENT LOGIC ---
+            if (sectionType === 'document' || sectionType === 'reading') {
+                // Documents/Readings are "view to complete", so enable button immediately
+                enableProceedButton();
             }
 
-            // --- VIDEO TRACKING ---
+            // --- VIDEO LOGIC ---
             const videoElement = document.querySelector('video');
+            
             if (sectionType === 'video' && videoElement) {
                 let lastUpdateTime = 0;
                 
@@ -243,8 +262,8 @@
                     const currentTime = Math.floor(videoElement.currentTime);
                     const totalDuration = Math.floor(videoElement.duration);
                     
-                    // Update every 5 seconds
-                    if (currentTime > lastUpdateTime + 5) {
+                    // Update every 1 second (changed from 5 to handle short videos)
+                    if (currentTime > lastUpdateTime) {
                         lastUpdateTime = currentTime;
                         
                         fetch(`/sections/${sectionId}/progress`, {
@@ -260,16 +279,20 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            if (data.completed) {
-                                console.log('Video completed!');
+                            // If backend says criteria met, enable button
+                            if (data.criteria_met) {
+                                enableProceedButton();
                             }
+                        })
+                        .catch(error => {
+                            console.error('Progress save failed:', error);
                         });
                     }
                 });
 
-                // Also mark complete on end
+                // Also enable on end (redundant safety)
                 videoElement.addEventListener('ended', function() {
-                    markComplete();
+                    enableProceedButton();
                 });
             }
         });

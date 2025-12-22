@@ -27,6 +27,9 @@ class CourseController extends Controller
             'duration_hours' => 'nullable|integer|min:0',
         ]);
 
+
+
+        $validated['instructor_id'] = Auth::id();
         Course::create($validated);
 
         return redirect()->route('courses')->with('success', 'Course created successfully!');
