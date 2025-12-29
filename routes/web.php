@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseSectionController;
 use App\Http\Controllers\CourseEnrollmentController;
 use App\Http\Controllers\SecretController;
+use App\Http\Controllers\QuizController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -56,6 +57,10 @@ Route::middleware(['auth', 'role:instructor,admin'])->group(function () {
     Route::delete('/courses/{course}/sections/{section}', [CourseSectionController::class, 'destroy'])->name('courses.sections.destroy');
     Route::patch('courses/{course}/sections/{section}/reorder', [CourseSectionController::class, 'reorder'])
         ->name('courses.sections.reorder');
+    
+    // Quiz Builder Routes
+    Route::get('/courses/{course}/sections/{section}/quiz', [QuizController::class, 'edit'])->name('quizzes.edit');
+    Route::put('/courses/{course}/sections/{section}/quiz', [QuizController::class, 'update'])->name('quizzes.update');
 });
 
 /*
@@ -73,6 +78,8 @@ Route::post('/sections/{section}/complete', [SectionProgressController::class, '
     ->name('sections.complete')->middleware('auth');
 Route::post('/sections/{section}/progress', [SectionProgressController::class, 'updateVideoProgress'])
     ->name('sections.progress')->middleware('auth');
+Route::post('/sections/{section}/quiz-submit', [QuizController::class, 'submit'])
+    ->name('quizzes.submit')->middleware('auth');
 
 require __DIR__.'/auth.php';
 

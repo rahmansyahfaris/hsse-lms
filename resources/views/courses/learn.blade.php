@@ -95,6 +95,93 @@
                                 <div class="prose max-w-none">
                                     {!! nl2br(e($currentSection->content)) !!}
                                 </div>
+                            @elseif ($currentSection->type === 'quiz')
+                                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                                    @php
+                                        $quiz = $currentSection->quiz;
+                                        // Check if user has an attempt
+                                        $lastAttempt = $quiz ? $quiz->attempts()->where('user_id', auth()->id())->latest()->first() : null;
+                                    @endphp
+
+                                    @if($lastAttempt)
+                                        {{-- Result View --}}
+                                        <div class="text-center mb-8">
+                                            <div class="inline-block p-4 rounded-full {{ $lastAttempt->passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} mb-4">
+                                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $lastAttempt->passed ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' : 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z' }}"></path></svg>
+                                            </div>
+                                            <h4 class="text-2xl font-bold {{ $lastAttempt->passed ? 'text-green-800' : 'text-red-800' }}">
+                                                {{ $lastAttempt->passed ? 'Quiz Passed!' : 'Quiz Failed' }}
+                                            </h4>
+                                            <p class="text-gray-600 mt-2">
+                                                Score: <span class="font-bold">{{ $lastAttempt->score }}</span> / {{ $lastAttempt->total_points }} 
+                                                ({{ round(($lastAttempt->score / $lastAttempt->total_points) * 100) }}%)
+                                            </p>
+                                            @if(!$lastAttempt->passed)
+                                                <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Try Again</button>
+                                            @endif
+                                        </div>
+
+                                        {{-- Detailed History --}}
+                                        <div class="space-y-6">
+                                            <h5 class="font-bold text-lg border-b pb-2">Attempt History</h5>
+                                            @foreach($quiz->questions as $index => $question)
+                                                @php
+                                                    $answer = $lastAttempt->answers->where('quiz_question_id', $question->id)->first();
+                                                    $isCorrect = $answer && $answer->selectedOption->is_correct;
+                                                @endphp
+                                                <div class="border rounded p-4 {{ $isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
+                                                    <p class="font-semibold mb-2">{{ $index + 1 }}. {{ $question->question_text }}</p>
+                                                    <ul class="space-y-1 ml-4 text-sm">
+                                                        @foreach($question->options as $option)
+                                                            <li class="flex items-center">
+                                                                @if($answer && $answer->quiz_option_id == $option->id)
+                                                                    <span class="mr-2">{{ $isCorrect ? '✅' : '❌' }} (You)</span>
+                                                                @elseif($option->is_correct)
+                                                                    <span class="mr-2">Correct Answer:</span>
+                                                                @endif
+                                                                <span class="{{ $option->is_correct ? 'font-bold text-green-700' : '' }} {{ ($answer && $answer->quiz_option_id == $option->id && !$isCorrect) ? 'text-red-700 line-through' : '' }}">
+                                                                    {{ $option->option_text }}
+                                                                </span>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                    @elseif($quiz && $quiz->questions->count() > 0)
+                                        {{-- Quiz Form --}}
+                                        <div class="mb-4 text-sm text-gray-500">
+                                            Passing Score: {{ $quiz->passing_score }}% | Total Questions: {{ $quiz->questions->count() }}
+                                        </div>
+                                        <form id="quiz-form">
+                                            <div class="space-y-8">
+                                                @foreach($quiz->questions as $index => $question)
+                                                    <div class="question-block">
+                                                        <h5 class="font-bold text-lg mb-3">{{ $index + 1 }}. {{ $question->question_text }} <span class="text-xs text-gray-400">({{ $question->points }} pts)</span></h5>
+                                                        <div class="space-y-2 ml-4">
+                                                            @foreach($question->options as $option)
+                                                                <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                                                                    <input type="radio" name="answers[{{ $question->id }}]" value="{{ $option->id }}" class="form-radio h-5 w-5 text-indigo-600 focus:ring-indigo-500" required>
+                                                                    <span class="text-gray-900">{{ $option->option_text }}</span>
+                                                                </label>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <div class="mt-8 pt-6 border-t">
+                                                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                    Submit Quiz
+                                                </button>
+                                            </div>
+                                        </form>
+                                    @else
+                                        <div class="text-center py-12 text-gray-500">
+                                            <p>This quiz has no questions yet.</p>
+                                        </div>
+                                    @endif
+                                </div>
                             @elseif ($currentSection->type === 'document')
                                 @php
                                     $fileExtension = strtolower(pathinfo($currentSection->content, PATHINFO_EXTENSION));
@@ -256,43 +343,59 @@
             const videoElement = document.querySelector('video');
             
             if (sectionType === 'video' && videoElement) {
+                // ... (Existing video logic) ...
                 let lastUpdateTime = 0;
-                
                 videoElement.addEventListener('timeupdate', function() {
                     const currentTime = Math.floor(videoElement.currentTime);
                     const totalDuration = Math.floor(videoElement.duration);
-                    
-                    // Update every 1 second (changed from 5 to handle short videos)
                     if (currentTime > lastUpdateTime) {
                         lastUpdateTime = currentTime;
-                        
                         fetch(`/sections/${sectionId}/progress`, {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrfToken
-                            },
-                            body: JSON.stringify({
-                                watch_time: currentTime,
-                                total_duration: totalDuration
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            // If backend says criteria met, enable button
-                            if (data.criteria_met) {
-                                enableProceedButton();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Progress save failed:', error);
-                        });
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                            body: JSON.stringify({ watch_time: currentTime, total_duration: totalDuration })
+                        }).then(r => r.json()).then(d => { if(d.criteria_met) enableProceedButton(); });
                     }
                 });
+            }
 
-                // Also enable on end (redundant safety)
-                videoElement.addEventListener('ended', function() {
-                    enableProceedButton();
+            // --- QUIZ LOGIC ---
+            const quizForm = document.getElementById('quiz-form');
+            if (sectionType === 'quiz' && quizForm) {
+                quizForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Collect answers
+                    const formData = new FormData(quizForm);
+                    const answers = {};
+                    for(let [key, value] of formData.entries()) {
+                        // key is "answers[123]", extract 123
+                        const qId = key.match(/\d+/)[0];
+                        answers[qId] = value;
+                    }
+
+                    fetch(`/sections/${sectionId}/quiz-submit`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ answers: answers })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.passed) {
+                            alert('Quiz Passed! Score: ' + data.score + '%');
+                            window.location.reload(); // Reload to show history & unlock Next
+                        } else {
+                            alert('Quiz Failed. Score: ' + data.score + '%. Please try again.');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Quiz Error:', error);
+                        alert('Something went wrong submitting the quiz.');
+                    });
                 });
             }
         });

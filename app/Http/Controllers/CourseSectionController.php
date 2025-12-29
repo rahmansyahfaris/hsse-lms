@@ -35,10 +35,15 @@ class CourseSectionController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|in:video,reading,quiz,document',
-            'content_file' => 'required|file|max:102400', // Max 100MB
+            'content_file' => 'nullable|file|max:102400', // Nullable for quizzes
             'is_locked' => 'nullable|boolean',
             'is_skippable' => 'nullable|boolean',
         ]);
+
+        // Validation Hook: Require content_file if type is NOT quiz
+        if ($validated['type'] !== 'quiz' && !$request->hasFile('content_file')) {
+            return back()->withErrors(['content_file' => 'Content file is required for Video, Reading, or Document sections.'])->withInput();
+        }
 
         $contentPath = 'No Content';
         $originalFilename = null;

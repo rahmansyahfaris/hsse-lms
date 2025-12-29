@@ -30,7 +30,7 @@
                         </div>
 
                         <!-- Content (File Upload) -->
-                        <div class="mb-4">
+                        <div class="mb-4" id="content-field">
                             <label for="content_file" class="block text-sm font-medium text-gray-700">Content File (Video, PDF, etc.)</label>
                             <input type="file" name="content_file" id="content_file" class="mt-1 block w-full text-sm text-gray-500
                                 file:mr-4 file:py-2 file:px-4
@@ -70,4 +70,25 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.getElementById('type');
+            const contentField = document.getElementById('content-field');
+            const contentInput = document.getElementById('content_file');
+
+            function toggleFields() {
+                if (typeSelect.value === 'quiz') {
+                    contentField.style.display = 'none';
+                    contentInput.removeAttribute('required');
+                } else {
+                    contentField.style.display = 'block';
+                    contentInput.setAttribute('required', 'required');
+                }
+            }
+
+            typeSelect.addEventListener('change', toggleFields);
+            toggleFields(); // Run on load
+        });
+    </script>
 </x-app-layout>

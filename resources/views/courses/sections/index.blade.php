@@ -54,6 +54,12 @@
                                                 </button>
                                             </form>
                                         @endif
+                                        
+                                        @if($section->type === 'quiz')
+                                            <a href="{{ route('quizzes.edit', [$course, $section]) }}" style="display: inline-block; padding: 6px 12px; background-color: #8B5CF6; color: white; border-radius: 4px; font-size: 14px; text-decoration: none; margin-right: 4px;">
+                                                Builder
+                                            </a>
+                                        @endif
 
                                         <a href="{{ route('courses.sections.edit', [$course, $section]) }}" style="display: inline-block; padding: 6px 12px; background-color: #3B82F6; color: white; border-radius: 4px; font-size: 14px; text-decoration: none;">
                                             Edit
