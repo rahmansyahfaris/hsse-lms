@@ -49,6 +49,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:instructor,admin'])->group(function () {
     Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
     Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
+    Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->name('courses.edit');
+    Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
+    Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
     Route::get('/courses/{course}/sections', [CourseSectionController::class, 'index'])->name('courses.sections.index');
     Route::get('/courses/{course}/sections/create', [CourseSectionController::class, 'create'])->name('courses.sections.create');
     Route::post('/courses/{course}/sections', [CourseSectionController::class, 'store'])->name('courses.sections.store');

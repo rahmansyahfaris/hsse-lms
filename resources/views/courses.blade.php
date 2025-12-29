@@ -39,6 +39,9 @@
                                             <a href="{{ route('courses.sections.index', $course) }}" style="display: block; width: 100%; text-align: center; padding: 8px 16px; background-color: #4F46E5; color: white; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none;">
                                                 Manage Sections
                                             </a>
+                                            <a href="{{ route('courses.edit', $course) }}" style="display: block; width: 100%; text-align: center; padding: 8px 16px; background-color: #6B7280; color: white; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none;">
+                                                Edit Course
+                                            </a>
                                         @endif
 
                                         {{-- Student: Enroll / Continue Button --}}

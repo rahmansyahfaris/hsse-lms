@@ -76,6 +76,54 @@ class CourseController extends Controller
 
         return view('courses.learn', compact('course', 'sections', 'currentSection', 'progress'));
     }
+
+    public function edit(Course $course)
+    {
+        // Only allow instructors or admins to edit
+        if (!Auth::user()->hasRole('instructor') && !Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('courses.edit', compact('course'));
+    }
+
+    public function update(\Illuminate\Http\Request $request, Course $course)
+    {
+        // Only allow instructors or admins to update
+        if (!Auth::user()->hasRole('instructor') && !Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'duration_hours' => 'nullable|integer|min:0',
+        ]);
+
+        $course->update($validated);
+
+        return redirect()->route('courses')->with('success', 'Course updated successfully!');
+    }
+
+    public function destroy(Course $course)
+    {
+        // Only allow instructors or admins to delete
+        if (!Auth::user()->hasRole('instructor') && !Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Delete all sections and their files
+        foreach ($course->sections as $section) {
+            if ($section->content && \Storage::disk('public')->exists($section->content)) {
+                \Storage::disk('public')->delete($section->content);
+            }
+            $section->delete();
+        }
+
+        $course->delete();
+
+        return redirect()->route('courses')->with('success', 'Course deleted successfully!');
+    }
 }
 
 
