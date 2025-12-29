@@ -51,10 +51,10 @@
                         </div>
 
                         <!-- Skippable Section -->
-                        <div class="mb-4">
+                        <div class="mb-4" id="unskippable-field">
                             <label class="inline-flex items-center">
-                                <input type="checkbox" name="is_skippable" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <span class="ml-2 text-gray-700">Allow Skipping? (Mark complete immediately on view)</span>
+                                <input type="checkbox" name="is_unskippable" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <span class="ml-2 text-gray-700">Unskippable (Requires 90% watch time for videos)</span>
                             </label>
                         </div>
 
@@ -76,6 +76,7 @@
             const typeSelect = document.getElementById('type');
             const contentField = document.getElementById('content-field');
             const contentInput = document.getElementById('content_file');
+            const unskippableField = document.getElementById('unskippable-field');
 
             function toggleFields() {
                 if (typeSelect.value === 'quiz') {
@@ -84,6 +85,13 @@
                 } else {
                     contentField.style.display = 'block';
                     contentInput.setAttribute('required', 'required');
+                }
+
+                // Show unskippable checkbox only for videos
+                if (typeSelect.value === 'video') {
+                    unskippableField.style.display = 'block';
+                } else {
+                    unskippableField.style.display = 'none';
                 }
             }
 

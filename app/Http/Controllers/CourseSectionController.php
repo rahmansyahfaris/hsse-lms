@@ -37,7 +37,7 @@ class CourseSectionController extends Controller
             'type' => 'required|in:video,reading,quiz,document',
             'content_file' => 'nullable|file|max:102400', // Nullable for quizzes
             'is_locked' => 'nullable|boolean',
-            'is_skippable' => 'nullable|boolean',
+            'is_unskippable' => 'nullable|boolean',
         ]);
 
         // Validation Hook: Require content_file if type is NOT quiz
@@ -62,7 +62,7 @@ class CourseSectionController extends Controller
             'original_filename' => $originalFilename,
             'order' => $course->sections()->count() + 1,
             'is_locked' => $request->has('is_locked'),
-            'is_skippable' => $request->has('is_skippable'),
+            'is_skippable' => !$request->has('is_unskippable'), // Inverted logic
         ]);
 
         return redirect()->route('courses.sections.index', $course)
@@ -87,14 +87,14 @@ class CourseSectionController extends Controller
             'type' => 'required|in:video,reading,quiz,document',
             'content_file' => 'nullable|file|max:102400', // Optional on update
             'is_locked' => 'nullable|boolean',
-            'is_skippable' => 'nullable|boolean',
+            'is_unskippable' => 'nullable|boolean',
         ]);
 
         // Updates
         $section->title = $validated['title'];
         $section->type = $validated['type'];
         $section->is_locked = $request->has('is_locked');
-        $section->is_skippable = $request->has('is_skippable');
+        $section->is_skippable = !$request->has('is_unskippable'); // Inverted logic
 
         // Handle File Update
         if ($request->hasFile('content_file')) {
