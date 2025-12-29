@@ -135,30 +135,39 @@ class CourseSectionController extends Controller
     public function reorder(Request $request, Course $course, CourseSection $section)
     {
         $direction = $request->input('direction');
-        $currentOrder = $section->order;
+        
+        // Get ALL sections ordered by their current order value
+        $allSections = $course->sections()->orderBy('order')->get();
+        
+        // Find the current section's position in the list (0-indexed)
+        $currentPosition = $allSections->search(function($s) use ($section) {
+            return $s->id === $section->id;
+        });
 
-        if ($direction === 'up') {
-            $previousSection = $course->sections()
-                ->where('order', '<', $currentOrder)
-                ->orderBy('order', 'desc')
-                ->first();
+        if ($currentPosition === false) {
+            return back()->withErrors('Section not found.');
+        }
 
-            if ($previousSection) {
-                // Swap orders
-                $section->update(['order' => $previousSection->order]);
-                $previousSection->update(['order' => $currentOrder]);
-            }
-        } elseif ($direction === 'down') {
-            $nextSection = $course->sections()
-                ->where('order', '>', $currentOrder)
-                ->orderBy('order', 'asc')
-                ->first();
+        // Determine the target position
+        $targetPosition = null;
+        if ($direction === 'up' && $currentPosition > 0) {
+            $targetPosition = $currentPosition - 1;
+        } elseif ($direction === 'down' && $currentPosition < $allSections->count() - 1) {
+            $targetPosition = $currentPosition + 1;
+        }
 
-            if ($nextSection) {
-                // Swap orders
-                $section->update(['order' => $nextSection->order]);
-                $nextSection->update(['order' => $currentOrder]);
-            }
+        // If we have a valid target, swap the two sections
+        if ($targetPosition !== null) {
+            $currentSection = $allSections[$currentPosition];
+            $targetSection = $allSections[$targetPosition];
+            
+            // Swap their order values
+            $tempOrder = $currentSection->order;
+            $currentSection->order = $targetSection->order;
+            $targetSection->order = $tempOrder;
+            
+            $currentSection->save();
+            $targetSection->save();
         }
 
         return back()->with('success', 'Section order updated.');
