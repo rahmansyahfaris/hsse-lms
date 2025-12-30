@@ -1,6 +1,7 @@
 <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 min-h-screen">
-    <div class="h-16 flex items-center justify-center border-b border-gray-100 dark:border-gray-700">
+    <div class="h-16 flex flex-col items-center justify-center border-b border-gray-100 dark:border-gray-700">
         <h1 class="text-xl font-bold text-gray-800 dark:text-white">HSSE LMS</h1>
+        <p class="text-xs text-gray-500">EEES Company</p>
     </div>
     <nav class="p-4">
         @php $menu = config('menu'); @endphp

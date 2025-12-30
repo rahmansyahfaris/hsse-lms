@@ -10,8 +10,14 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-medium">All Users</h3>
-                        <a href="{{ route('admin.users.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        <div class="flex items-center">
+                            <h3 class="text-lg font-medium mr-4">All Users</h3>
+                            <form method="GET" action="{{ route('admin.users.index') }}" class="flex items-center">
+                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search users..." class="rounded-l-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2">
+                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700 text-sm font-semibold" style="background-color: #4F46E5; color: white;">Search</button>
+                            </form>
+                        </div>
+                        <a href="{{ route('admin.users.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" style="background-color: #4F46E5; color: white;">
                             Add New User
                         </a>
                     </div>

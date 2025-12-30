@@ -13,25 +13,34 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-        ]);
+        // Admin Account
+        \App\Models\User::firstOrCreate(
+            ['email' => 'admin@eees.com'],
+            [
+                'name' => 'System Admin',
+                'password' => bcrypt('password'),
+                'role' => 'admin',
+            ]
+        );
 
-        \App\Models\User::create([
-            'name' => 'Instructor User',
-            'email' => 'instructor@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'instructor',
-        ]);
+        // Instructor Account
+        \App\Models\User::firstOrCreate(
+            ['email' => 'instructor@eees.com'],
+            [
+                'name' => 'Instructor User',
+                'password' => bcrypt('password'),
+                'role' => 'instructor',
+            ]
+        );
 
-        \App\Models\User::create([
-            'name' => 'Student User',
-            'email' => 'student@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'user',
-        ]);
+        // Student Account
+        \App\Models\User::firstOrCreate(
+            ['email' => 'student@eees.com'],
+            [
+                'name' => 'Student User',
+                'password' => bcrypt('password'),
+                'role' => 'student', // Ensure this matches your enum/string 'student' or 'user'
+            ]
+        );
     }
 }
