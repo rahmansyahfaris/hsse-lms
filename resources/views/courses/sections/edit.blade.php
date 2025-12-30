@@ -96,8 +96,8 @@
             const unskippableField = document.getElementById('unskippable-field');
 
             function toggleFields() {
-                // Show unskippable checkbox only for videos
-                if (typeSelect.value === 'video') {
+                // Show unskippable checkbox only for videos and quizzes
+                if (typeSelect.value === 'video' || typeSelect.value === 'quiz') {
                     unskippableField.style.display = 'block';
                 } else {
                     unskippableField.style.display = 'none';

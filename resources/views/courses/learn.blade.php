@@ -103,79 +103,222 @@
                                         $lastAttempt = $quiz ? $quiz->attempts()->where('user_id', auth()->id())->latest()->first() : null;
                                     @endphp
 
-                                    @if($lastAttempt)
-                                        {{-- Result View --}}
-                                        <div class="text-center mb-8">
-                                            <div class="inline-block p-4 rounded-full {{ $lastAttempt->passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} mb-4">
-                                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $lastAttempt->passed ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' : 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z' }}"></path></svg>
-                                            </div>
-                                            <h4 class="text-2xl font-bold {{ $lastAttempt->passed ? 'text-green-800' : 'text-red-800' }}">
-                                                {{ $lastAttempt->passed ? 'Quiz Passed!' : 'Quiz Failed' }}
-                                            </h4>
-                                            <p class="text-gray-600 mt-2">
-                                                Score: <span class="font-bold">{{ $lastAttempt->score }}</span> / {{ $lastAttempt->total_points }} 
-                                                ({{ round(($lastAttempt->score / $lastAttempt->total_points) * 100) }}%)
-                                            </p>
-                                            @if(!$lastAttempt->passed)
-                                                <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Try Again</button>
-                                            @endif
-                                        </div>
-
-                                        {{-- Detailed History --}}
-                                        <div class="space-y-6">
-                                            <h5 class="font-bold text-lg border-b pb-2">Attempt History</h5>
-                                            @foreach($quiz->questions as $index => $question)
-                                                @php
-                                                    $answer = $lastAttempt->answers->where('quiz_question_id', $question->id)->first();
-                                                    $isCorrect = $answer && $answer->selectedOption->is_correct;
-                                                @endphp
-                                                <div class="border rounded p-4 {{ $isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
-                                                    <p class="font-semibold mb-2">{{ $index + 1 }}. {{ $question->question_text }}</p>
-                                                    <ul class="space-y-1 ml-4 text-sm">
-                                                        @foreach($question->options as $option)
-                                                            <li class="flex items-center">
-                                                                @if($answer && $answer->quiz_option_id == $option->id)
-                                                                    <span class="mr-2">{{ $isCorrect ? '✅' : '❌' }} (You)</span>
-                                                                @elseif($option->is_correct)
-                                                                    <span class="mr-2">Correct Answer:</span>
-                                                                @endif
-                                                                <span class="{{ $option->is_correct ? 'font-bold text-green-700' : '' }} {{ ($answer && $answer->quiz_option_id == $option->id && !$isCorrect) ? 'text-red-700 line-through' : '' }}">
-                                                                    {{ $option->option_text }}
-                                                                </span>
-                                                            </li>
-                                                        @endforeach
-                                                    </ul>
+                                    @if($quiz && $quiz->questions->count() > 0)
+                                        {{-- Quiz Container with 3 States --}}
+                                        <div id="quiz-container">
+                                            {{-- State 1: Start Screen --}}
+                                            <div id="quiz-start-screen" class="text-center py-12">
+                                                <div class="mb-6">
+                                                    <svg class="w-20 h-20 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
                                                 </div>
-                                            @endforeach
+                                                <h4 class="text-2xl font-bold text-gray-900 mb-2">{{ $quiz->title ?? 'Quiz' }}</h4>
+                                                <div class="text-gray-600 space-y-2 mb-8">
+                                                    <p><strong>Total Questions:</strong> {{ $quiz->questions->count() }}</p>
+                                                    <p><strong>Passing Score:</strong> {{ $quiz->passing_score }}%</p>
+                                                    <p><strong>Time Limit:</strong> <span id="quiz-duration-display">{{ $quiz->duration_minutes }}</span> minutes</p>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-4">
+                                                    <button onclick="startQuiz()" class="px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition" style="background-color: #4F46E5; color: white;">
+                                                        Start Quiz
+                                                    </button>
+                                                    
+                                                    @if($lastAttempt)
+                                                        <a href="{{ route('quizzes.history', ['course' => $course->id, 'section' => $currentSection->id]) }}" class="text-indigo-600 font-medium hover:text-indigo-800 underline">
+                                                            View Past Attempts
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            {{-- State 2: Active Quiz --}}
+                                            <div id="quiz-active-screen" class="hidden">
+                                                {{-- Timer Display --}}
+                                                <div class="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="text-sm font-medium text-gray-700">Time Remaining:</span>
+                                                        <span id="timer-display" class="text-2xl font-bold text-indigo-600">{{ $quiz->duration_minutes }}:00</span>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Quiz Form --}}
+                                                <form id="quiz-form">
+                                                    <input type="hidden" id="quiz-started-at" name="started_at" value="">
+                                                    <div class="space-y-8">
+                                                        @foreach($quiz->questions as $index => $question)
+                                                            <div class="question-block border-b pb-6">
+                                                                <h5 class="font-bold text-lg mb-3">{{ $index + 1 }}. {{ $question->question_text }} <span class="text-xs text-gray-400">({{ $question->points }} pts)</span></h5>
+                                                                <div class="space-y-2 ml-4">
+                                                                    @foreach($question->options as $option)
+                                                                        <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-gray-50 rounded border border-transparent hover:border-indigo-200 transition">
+                                                                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $option->id }}" class="form-radio h-5 w-5 text-indigo-600 focus:ring-indigo-500" required>
+                                                                            <span class="text-gray-900">{{ $option->option_text }}</span>
+                                                                        </label>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="mt-8 pt-6 border-t">
+                                                        <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" style="background-color: #16A34A; color: white;">
+                                                            Finish Quiz
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                            {{-- State 3: Results Screen --}}
+                                            <div id="quiz-results-screen" class="hidden">
+                                                <div class="text-center mb-8">
+                                                    <div id="result-icon" class="inline-block p-4 rounded-full mb-4">
+                                                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                                                    </div>
+                                                    <h4 id="result-title" class="text-2xl font-bold mb-2"></h4>
+                                                    <p id="result-score" class="text-gray-600 text-lg"></p>
+                                                </div>
+                                                <div class="flex gap-4 justify-center">
+                                                    <button id="quiz-action-btn" onclick="location.reload()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700" style="background-color: #4F46E5; color: white;">
+                                                        Retake Quiz
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                    @elseif($quiz && $quiz->questions->count() > 0)
-                                        {{-- Quiz Form --}}
-                                        <div class="mb-4 text-sm text-gray-500">
-                                            Passing Score: {{ $quiz->passing_score }}% | Total Questions: {{ $quiz->questions->count() }}
-                                        </div>
-                                        <form id="quiz-form">
-                                            <div class="space-y-8">
-                                                @foreach($quiz->questions as $index => $question)
-                                                    <div class="question-block">
-                                                        <h5 class="font-bold text-lg mb-3">{{ $index + 1 }}. {{ $question->question_text }} <span class="text-xs text-gray-400">({{ $question->points }} pts)</span></h5>
-                                                        <div class="space-y-2 ml-4">
-                                                            @foreach($question->options as $option)
-                                                                <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
-                                                                    <input type="radio" name="answers[{{ $question->id }}]" value="{{ $option->id }}" class="form-radio h-5 w-5 text-indigo-600 focus:ring-indigo-500" required>
-                                                                    <span class="text-gray-900">{{ $option->option_text }}</span>
-                                                                </label>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                            <div class="mt-8 pt-6 border-t">
-                                                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                    Submit Quiz
-                                                </button>
-                                            </div>
-                                        </form>
+                                        {{-- Quiz JavaScript --}}
+                                        <script>
+                                            let quizTimer;
+                                            let timeRemaining;
+                                            let quizStartTime;
+
+                                            function startQuiz() {
+                                                // Hide start screen, show active screen
+                                                document.getElementById('quiz-start-screen').classList.add('hidden');
+                                                document.getElementById('quiz-active-screen').classList.remove('hidden');
+
+                                                // Record start time
+                                                quizStartTime = new Date();
+                                                document.getElementById('quiz-started-at').value = quizStartTime.toISOString();
+
+                                                // Initialize timer
+                                                const durationMinutes = {{ $quiz->duration_minutes }};
+                                                timeRemaining = durationMinutes * 60; // Convert to seconds
+                                                updateTimerDisplay();
+                                                startTimer();
+                                            }
+
+                                            function startTimer() {
+                                                quizTimer = setInterval(() => {
+                                                    timeRemaining--;
+                                                    updateTimerDisplay();
+
+                                                    if (timeRemaining <= 0) {
+                                                        clearInterval(quizTimer);
+                                                        autoSubmitQuiz();
+                                                    }
+                                                }, 1000);
+                                            }
+
+                                            function updateTimerDisplay() {
+                                                const minutes = Math.floor(timeRemaining / 60);
+                                                const seconds = timeRemaining % 60;
+                                                const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                                                document.getElementById('timer-display').textContent = display;
+
+                                                // Warning color when < 1 minute
+                                                if (timeRemaining < 60) {
+                                                    document.getElementById('timer-display').classList.add('text-red-600');
+                                                    document.getElementById('timer-display').classList.remove('text-indigo-600');
+                                                }
+                                            }
+
+                                            function autoSubmitQuiz() {
+                                                alert('Time is up! Your quiz will be submitted automatically.');
+                                                document.getElementById('quiz-form').dispatchEvent(new Event('submit'));
+                                            }
+
+                                            // Handle quiz submission
+                                            document.getElementById('quiz-form').addEventListener('submit', async function(e) {
+                                                e.preventDefault();
+                                                clearInterval(quizTimer);
+
+                                                const formData = new FormData(this);
+                                                const answers = {};
+                                                for (let [key, value] of formData.entries()) {
+                                                    if (key.startsWith('answers[')) {
+                                                        const questionId = key.match(/\d+/)[0];
+                                                        answers[questionId] = value;
+                                                    }
+                                                }
+
+                                                // Calculate time spent
+                                                const endTime = new Date();
+                                                const timeSpentSeconds = Math.floor((endTime - quizStartTime) / 1000);
+
+                                                try {
+                                                    const response = await fetch('{{ route('quizzes.submit', ['course' => $course->id, 'section' => $currentSection->id]) }}', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                        },
+                                                        body: JSON.stringify({
+                                                            answers: answers,
+                                                            started_at: quizStartTime.toISOString(),
+                                                            time_spent_seconds: timeSpentSeconds
+                                                        })
+                                                    });
+
+                                                    const result = await response.json();
+                                                    showResults(result);
+                                                } catch (error) {
+                                                    console.error('Error submitting quiz:', error);
+                                                    alert('An error occurred while submitting the quiz. Please try again.');
+                                                }
+                                            });
+
+                                            function showResults(result) {
+                                                // Hide active screen, show results screen
+                                                document.getElementById('quiz-active-screen').classList.add('hidden');
+                                                document.getElementById('quiz-results-screen').classList.remove('hidden');
+
+                                                // Update result display
+                                                const passed = result.passed;
+                                                const resultIcon = document.getElementById('result-icon');
+                                                const resultTitle = document.getElementById('result-title');
+                                                const resultScore = document.getElementById('result-score');
+
+                                                if (passed) {
+                                                    resultIcon.className = 'inline-block p-4 rounded-full bg-green-100 text-green-700 mb-4';
+                                                    resultIcon.querySelector('svg').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+                                                    resultTitle.textContent = 'Quiz Passed!';
+                                                    resultTitle.className = 'text-2xl font-bold text-green-800 mb-2';
+                                                } else {
+                                                    resultIcon.className = 'inline-block p-4 rounded-full bg-red-100 text-red-700 mb-4';
+                                                    resultIcon.querySelector('svg').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+                                                    resultTitle.textContent = 'Quiz Failed';
+                                                    resultTitle.className = 'text-2xl font-bold text-red-800 mb-2';
+                                                }
+
+                                                resultScore.innerHTML = `Score: <span class="font-bold">${result.score}</span> / ${result.total_points} (${result.percentage}%)`;
+                                                // Update Button Text & State
+                                                const actionBtn = document.getElementById('quiz-action-btn');
+                                                if (passed) {
+                                                    actionBtn.textContent = "Refresh & Continue";
+                                                    actionBtn.style.backgroundColor = "#16A34A"; // Green
+                                                    
+                                                    // Enable Next Section button
+                                                    const nextButton = document.getElementById('next-section-btn');
+                                                    if (nextButton) {
+                                                        // Completely replace the style attribute to override server-side disabled state
+                                                        nextButton.setAttribute('style', 'display: inline-flex; align-items: center; padding: 8px 16px; background-color: #4F46E5; color: white; border-radius: 6px; font-weight: 600; text-decoration: none;');
+                                                    }
+                                                } else {
+                                                    actionBtn.textContent = "Retake Quiz";
+                                                    actionBtn.style.backgroundColor = "#DC2626"; // Red
+                                                }
+                                            }
+                                        </script>
                                     @else
                                         <div class="text-center py-12 text-gray-500">
                                             <p>This quiz has no questions yet.</p>
@@ -239,7 +382,20 @@
                                 $criteriaMet = false;
                                 if ($currentSection->is_skippable) {
                                     $criteriaMet = true;
+                                } elseif ($currentSection->type === 'quiz') {
+                                    // For quizzes: check if user has passed at least once
+                                    $quiz = $currentSection->quiz;
+                                    if ($quiz) {
+                                        $passedAttempt = $quiz->attempts()
+                                            ->where('user_id', auth()->id())
+                                            ->where('passed', true)
+                                            ->exists();
+                                        if ($passedAttempt) {
+                                            $criteriaMet = true;
+                                        }
+                                    }
                                 } elseif (isset($progress[$currentSection->id])) {
+                                    // For videos: check 90% watch time
                                     $sectionProgress = $progress[$currentSection->id];
                                     if ($sectionProgress->total_duration > 0) {
                                         $percentage = ($sectionProgress->watch_time / $sectionProgress->total_duration) * 100;

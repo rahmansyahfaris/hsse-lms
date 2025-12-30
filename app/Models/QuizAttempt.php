@@ -9,10 +9,11 @@ class QuizAttempt extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'quiz_id', 'score', 'total_points', 'passed'];
+    protected $fillable = ['user_id', 'quiz_id', 'score', 'total_points', 'passed', 'started_at', 'time_spent_seconds'];
 
     protected $casts = [
         'passed' => 'boolean',
+        'started_at' => 'datetime',
     ];
 
     public function user()

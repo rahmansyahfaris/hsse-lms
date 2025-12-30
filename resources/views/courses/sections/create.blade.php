@@ -54,7 +54,7 @@
                         <div class="mb-4" id="unskippable-field">
                             <label class="inline-flex items-center">
                                 <input type="checkbox" name="is_unskippable" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <span class="ml-2 text-gray-700">Unskippable (Requires 90% watch time for videos)</span>
+                                <span class="ml-2 text-gray-700">Unskippable (Requires 90% watch time for videos, passing quiz for quizzes)</span>
                             </label>
                         </div>
 
@@ -87,8 +87,8 @@
                     contentInput.setAttribute('required', 'required');
                 }
 
-                // Show unskippable checkbox only for videos
-                if (typeSelect.value === 'video') {
+                // Show unskippable checkbox only for videos and quizzes
+                if (typeSelect.value === 'video' || typeSelect.value === 'quiz') {
                     unskippableField.style.display = 'block';
                 } else {
                     unskippableField.style.display = 'none';

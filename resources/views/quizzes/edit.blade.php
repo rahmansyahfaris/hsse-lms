@@ -21,11 +21,25 @@
                         @csrf
                         @method('PUT')
 
+                        <!-- Quiz Title -->>
+                        <div class="mb-6 border-b pb-6">
+                            <label class="block text-sm font-medium text-gray-700">Quiz Title (Optional)</label>
+                            <input type="text" name="title" value="{{ old('title', $quiz->title) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <p class="text-xs text-gray-500 mt-1">Displayed on the quiz start screen. Defaults to section title if empty.</p>
+                        </div>
+
                         <!-- Passing Score -->
                         <div class="mb-6 border-b pb-6">
                             <label class="block text-sm font-medium text-gray-700">Passing Score (%)</label>
                             <input type="number" name="passing_score" value="{{ old('passing_score', $quiz->passing_score) }}" class="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required min="0" max="100">
                             <p class="text-xs text-gray-500 mt-1">Student must achieve this percentage to complete the section.</p>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="mb-6 border-b pb-6">
+                            <label class="block text-sm font-medium text-gray-700">Time Limit (Minutes)</label>
+                            <input type="number" name="duration_minutes" value="{{ old('duration_minutes', $quiz->duration_minutes ?? 10) }}" class="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required min="1">
+                            <p class="text-xs text-gray-500 mt-1">Countdown timer duration. Quiz auto-submits when time runs out.</p>
                         </div>
 
                         <!-- Questions Container -->

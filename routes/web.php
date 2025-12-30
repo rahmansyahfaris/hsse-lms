@@ -81,8 +81,14 @@ Route::post('/sections/{section}/complete', [SectionProgressController::class, '
     ->name('sections.complete')->middleware('auth');
 Route::post('/sections/{section}/progress', [SectionProgressController::class, 'updateVideoProgress'])
     ->name('sections.progress')->middleware('auth');
-Route::post('/sections/{section}/quiz-submit', [QuizController::class, 'submit'])
+
+// Quiz Routes (Phase 7B)
+Route::post('/courses/{course}/sections/{section}/quiz/submit', [QuizController::class, 'submit'])
     ->name('quizzes.submit')->middleware('auth');
+Route::get('/courses/{course}/sections/{section}/quiz/history', [QuizController::class, 'history'])
+    ->name('quizzes.history')->middleware('auth');
+Route::get('/courses/{course}/sections/{section}/quiz/attempts/{attempt}', [QuizController::class, 'review'])
+    ->name('quizzes.review')->middleware('auth');
 
 require __DIR__.'/auth.php';
 

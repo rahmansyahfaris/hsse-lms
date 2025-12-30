@@ -40,7 +40,9 @@ class QuizController extends Controller
         // For now, we'll validate a large array/JSON structure.
         
         $validated = $request->validate([
+            'title' => 'nullable|string|max:255',
             'passing_score' => 'required|integer|min:0|max:100',
+            'duration_minutes' => 'required|integer|min:1',
             'questions' => 'array',
             'questions.*.text' => 'required|string',
             'questions.*.points' => 'required|integer',
@@ -50,7 +52,11 @@ class QuizController extends Controller
         ]);
 
         $quiz = $section->quiz;
-        $quiz->update(['passing_score' => $validated['passing_score']]);
+        $quiz->update([
+            'title' => $validated['title'],
+            'passing_score' => $validated['passing_score'],
+            'duration_minutes' => $validated['duration_minutes'],
+        ]);
 
         // Delete existing questions to simple sync (MVP approach)
         // Note: This wipes history references if not careful. For MVP dev, this is fine.
@@ -87,6 +93,8 @@ class QuizController extends Controller
     {
         $request->validate([
             'answers' => 'required|array',
+            'started_at' => 'nullable|date',
+            'time_spent_seconds' => 'nullable|integer',
         ]);
 
         $quiz = $section->quiz;
@@ -128,12 +136,14 @@ class QuizController extends Controller
         $percentage = $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0;
         $passed = $percentage >= $quiz->passing_score;
 
-        // Save Attempt
+        // Save Attempt with time tracking
         $attempt = $quiz->attempts()->create([
             'user_id' => auth()->id(),
             'score' => $score,
             'total_points' => $totalPoints,
             'passed' => $passed,
+            'started_at' => $request->input('started_at'),
+            'time_spent_seconds' => $request->input('time_spent_seconds'),
         ]);
 
         // Save Detailed Answers
@@ -155,8 +165,47 @@ class QuizController extends Controller
         return response()->json([
             'message' => 'Quiz submitted.',
             'passed' => $passed,
-            'score' => round($percentage),
+            'score' => $score,
+            'total_points' => $totalPoints,
+            'percentage' => round($percentage),
             'attempt_id' => $attempt->id
         ]);
+    }
+    /**
+     * Show Quiz History (Learner Side)
+     */
+    public function history(Course $course, CourseSection $section)
+    {
+        $quiz = $section->quiz;
+        if (!$quiz) {
+            return redirect()->back()->with('error', 'No quiz found.');
+        }
+
+        $attempts = $quiz->attempts()
+            ->where('user_id', auth()->id())
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('quizzes.history', compact('course', 'section', 'quiz', 'attempts'));
+    }
+
+    /**
+     * Show Specific Attempt Review (Learner Side)
+     */
+    public function review(Course $course, CourseSection $section, $attemptId)
+    {
+        $quiz = $section->quiz;
+        if (!$quiz) {
+            return redirect()->back()->with('error', 'No quiz found.');
+        }
+
+        // Fetch attempt and eager load answers
+        $attempt = $quiz->attempts()
+            ->with(['answers.question.options', 'answers.selectedOption'])
+            ->where('id', $attemptId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        return view('quizzes.review', compact('course', 'section', 'quiz', 'attempt'));
     }
 }
