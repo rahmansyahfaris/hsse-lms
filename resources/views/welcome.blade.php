@@ -24,7 +24,7 @@
                     <span class="text-indigo-600">HSSE</span> LMS
                 </h1>
                 <p class="text-2xl text-gray-500 dark:text-gray-400 tracking-wider uppercase font-medium">
-                    EEES Company
+                    EEES
                 </p>
             </div>
 
@@ -33,32 +33,27 @@
                 @if (Route::has('login'))
                     <div class="flex flex-col gap-4">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="w-full text-center px-6 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:-translate-y-1">
+                            <a href="{{ url('/dashboard') }}" style="display: block; width: 100%; text-align: center; padding: 1rem 1.5rem; background-color: #4f46e5; color: white !important; font-size: 1.125rem; font-weight: 600; border-radius: 0.5rem; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
                                 Go to Dashboard
                             </a>
-                            <div class="text-center">
-                                <span class="text-gray-500 text-sm">You are already logged in.</span>
+                            <div style="text-align: center; margin-top: 0.5rem;">
+                                <span style="color: #6b7280; font-size: 0.875rem;">You are already logged in.</span>
                             </div>
                         @else
-                            <a href="{{ route('login') }}" class="w-full text-center px-6 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:-translate-y-1">
+                            <a href="{{ route('login') }}" style="display: block; width: 100%; text-align: center; padding: 1rem 1.5rem; background-color: #4f46e5; color: white !important; visibility: visible !important; opacity: 1 !important; font-size: 1.125rem; font-weight: 600; border-radius: 0.5rem; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
                                 Log in
                             </a>
                             
                             <!-- Hidden registration link note (Admin only) -->
-                            <div class="mt-8 text-center border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <p class="text-gray-400 text-sm">
+                            <div style="margin-top: 2rem; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+                                <p style="color: #9ca3af; font-size: 0.875rem;">
                                     Don't have an account? <br>
-                                    Please contact the <span class="font-semibold text-gray-600 dark:text-gray-300">HSSE Administrator</span>.
+                                    Please contact the <span style="font-weight: 600; color: #4b5563;">HSSE Administrator</span>.
                                 </p>
                             </div>
                         @endauth
                     </div>
                 @endif
-            </div>
-
-            <!-- Footer -->
-            <div class="mt-16 text-center text-sm text-gray-400 dark:text-gray-500">
-                &copy; {{ date('Y') }} EEES Company. All rights reserved.
             </div>
             
         </div>
