@@ -5,14 +5,7 @@ return [
         'title' => 'Home',
         'route'=> 'dashboard',        
     ],
-    [
-        'title' => 'Videos',
-        'route'=> 'videos',        
-    ],
-    [
-        'title' => 'Photos',
-        'route'=> 'photos',        
-    ],
+    // Videos and Photos removed as per user request
     [
         'title' => 'Courses',
         'route' => 'courses'

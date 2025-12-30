@@ -17,6 +17,20 @@
                     </a>
                 </li>
             @endforeach
+            
+            @if(auth()->check() && auth()->user()->role === 'admin')
+                <li class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</span>
+                    <a href="{{ route('admin.users.index') }}"
+                       class="mt-2 block px-4 py-2 rounded-lg transition-colors duration-200
+                              {{ request()->routeIs('admin.users.*') 
+                                 ? 'bg-red-50 text-red-600 dark:text-red-400' 
+                                 : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                              }}">
+                        Manage Users
+                    </a>
+                </li>
+            @endif
         </ul>
     </nav>
 </aside>

@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware(['auth', 'role:instructor,admin'])->group(function () {
+    // ... existing course routes ...
     Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
     Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
     Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->name('courses.edit');
@@ -66,11 +67,12 @@ Route::middleware(['auth', 'role:instructor,admin'])->group(function () {
     Route::put('/courses/{course}/sections/{section}/quiz', [QuizController::class, 'update'])->name('quizzes.update');
 });
 
-/*
-Route::middleware(['auth', CheckRole::class.':admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+
+// User Management Routes (Admin Only)
+use App\Http\Controllers\AdminUserController;
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('admin/users', AdminUserController::class, ['as' => 'admin']);
 });
-*/
 
 // Test Route for RBAC
 Route::middleware(['auth', 'role:instructor,admin'])->get('/secret', [SecretController::class, 'index'])->name('secret');

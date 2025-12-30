@@ -24,7 +24,6 @@
                             <label for="type" class="block text-sm font-medium text-gray-700">Section Type</label>
                             <select name="type" id="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                                 <option value="video" {{ $section->type == 'video' ? 'selected' : '' }}>Video</option>
-                                <option value="reading" {{ $section->type == 'reading' ? 'selected' : '' }}>Reading</option>
                                 <option value="quiz" {{ $section->type == 'quiz' ? 'selected' : '' }}>Quiz</option>
                                 <option value="document" {{ $section->type == 'document' ? 'selected' : '' }}>Document</option>
                             </select>
